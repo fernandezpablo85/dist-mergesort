@@ -18,17 +18,23 @@ object Sorter {
     }
   }
 
-  private def merge(left: List[Int], right: List[Int]): List[Int] = left match {
-    case Nil => right // If left is empty, then right is sorted.
-    case _ => {
-      right match {
-        case Nil => left // If right is empty then left is sorted.
-        case _ =>
-          if (left.head < right.head)
-            left.head :: merge(left.tail, right)
-          else
-            right.head :: merge(left, right.tail)
+  private def merge(left: List[Int], right: List[Int]) = {
+    @tailrec
+    def loop(left: List[Int], right: List[Int], acc: List[Int]): List[Int] = {
+      left match {
+        case Nil => acc ::: right
+        case _ => {
+          right match {
+            case Nil => acc ::: left
+            case _ =>
+              if (left.head < right.head)
+                loop(left.tail, right, left.head :: acc)
+              else
+                loop(left, right.tail, right.head :: acc)
+          }
+        }
       }
     }
+    loop(left, right, Nil)
   }
 }
