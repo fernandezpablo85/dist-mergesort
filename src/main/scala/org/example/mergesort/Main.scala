@@ -1,8 +1,28 @@
 package org.example.mergesort
 
+import util.Random
+import java.util.concurrent.TimeUnit
+import annotation.tailrec
+
 object Main extends App {
-  val unsorted = List(1,5,6,1,2,4)
-  assert(Sorter.sort(unsorted) == List(1,1,2,4,5,6), "List must be sorted")
+
+  val few = (1 to 1000).map(Random.nextInt).toList
+  val many = (1 to 5000000).map(Random.nextInt).toList
+
+  Benchmark.time(TimeUnit.MICROSECONDS) {
+    Sorter.sort(few)
+  }
+
+  // This is slow. About ~35 seconds.
+  Benchmark.time(TimeUnit.SECONDS) {
+    Sorter.sort(many)
+  }
+
+  // Note that our implementation is suboptimal.
+  // Scala native order function takes 5-10 seconds to sort the same array.
+  Benchmark.time(TimeUnit.SECONDS, disabled = true) {
+    many.sortWith(_ < _)
+  }
 }
 
 object Sorter {
