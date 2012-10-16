@@ -1,60 +1,36 @@
 package org.example.mergesort
 
 import util.Random
-import java.util.concurrent.TimeUnit
-import annotation.tailrec
 
 object Main extends App {
 
-  val few = (1 to 1000).map(Random.nextInt).toList
-  val many = (1 to 5000000).map(Random.nextInt).toList
+  private val BigArray = (1 to 1000000).map(Random.nextInt).toList
+  private val SmallArray = (1 to 500).map(Random.nextInt).toList
 
-  Benchmark.time(TimeUnit.MICROSECONDS) {
-    Sorter.sort(few)
-  }
+  println("Enter a sequence of numbers to sort or use 'small' or 'big' for predefined arrays.")
+  println("Type 'exit' to quit.")
 
-  // This is slow. About ~35 seconds.
-  Benchmark.time(TimeUnit.SECONDS) {
-    Sorter.sort(many)
-  }
-
-  // Note that our implementation is suboptimal.
-  // Scala native order function takes 5-10 seconds to sort the same array.
-  Benchmark.time(TimeUnit.SECONDS, disabled = true) {
-    many.sortWith(_ < _)
-  }
-}
-
-object Sorter {
-
-  def sort(array: List[Int]): List[Int] = {
-    // An array of 1 is already sorted.
-    if(array.size <= 1) {
-      array
-    } else {
-      // Split in halves, sort and merge those.
-      val (left, right) = array.splitAt(array.size / 2)
-      merge(sort(left), sort(right))
+  for(line <- io.Source.stdin.getLines()) {
+    line match {
+      case "exit" => System.exit(0)
+      case "big" => sortInts(BigArray)
+      case "small" => sortInts(SmallArray)
+      case s: String if (s.split(",").size > 1) => sortChars(s.split(","))
+      case other => System.err.println("[error] Can't sort: " + other)
     }
   }
 
-  private def merge(left: List[Int], right: List[Int]) = {
-    @tailrec
-    def loop(left: List[Int], right: List[Int], acc: List[Int]): List[Int] = {
-      left match {
-        case Nil => acc ::: right
-        case _ => {
-          right match {
-            case Nil => acc ::: left
-            case _ =>
-              if (left.head < right.head)
-                loop(left.tail, right, left.head :: acc)
-              else
-                loop(left, right.tail, right.head :: acc)
-          }
-        }
-      }
-    }
-    loop(left, right, Nil)
+  def sortInts(list: List[Int]) = {
+    val size = list.size //size is O(n) for list so we better cache it.
+    println("about to sort %s elements...".format(size))
+    val sorted = Sorter.sort(list)
+    println("sorted %s elements!".format(size))
+    if (size <= 500) println(sorted.mkString("(",",",")")) else println("(list too big to display)")
+  }
+
+  def sortChars(list: Array[String]) = try {
+    sortInts(list.map(Integer.parseInt).toList)
+  } catch {
+    case e: NumberFormatException => println("[error] Cant sort: " + list.mkString(","))
   }
 }
